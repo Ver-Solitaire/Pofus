@@ -1,0 +1,127 @@
+<Window x:Class="Pofus.Hud.Modules.Settings.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Pofus — Réglages"
+        Width="470"
+        SizeToContent="Height"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen">
+    <Border Style="{StaticResource Pofus.PanelBorder}" Margin="14">
+        <Grid Margin="18">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid x:Name="HeaderBar" Grid.Row="0" MouseLeftButtonDown="OnHeaderMouseLeftButtonDown">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Réglages" Style="{StaticResource Pofus.WindowTitle}" />
+                <Button Grid.Column="1" Style="{StaticResource Pofus.CloseButton}" Click="OnCloseClick" />
+            </Grid>
+
+            <Border Grid.Row="1" Height="1" Margin="0,12" Background="{DynamicResource Pofus.BorderSubtle}" />
+
+            <CheckBox x:Name="LaunchAtStartupCheckBox" Grid.Row="2"
+                      Content="Lancer Pofus au démarrage de Windows"
+                      Checked="OnLaunchAtStartupChanged" Unchecked="OnLaunchAtStartupChanged" />
+
+            <Button x:Name="ResetConflictWarningButton" Grid.Row="3" Margin="0,14,0,0"
+                    Content="Réinitialiser l'avertissement de conflit logiciel"
+                    HorizontalAlignment="Left"
+                    Click="OnResetConflictWarningClick" />
+
+            <Border Grid.Row="4" Height="1" Margin="0,16"
+                    Background="{DynamicResource Pofus.BorderSubtle}" />
+
+            <TextBlock Grid.Row="5" Text="Apparence" FontWeight="SemiBold"
+                       Foreground="{DynamicResource Pofus.TextPrimary}" Margin="0,0,0,8" />
+
+            <StackPanel x:Name="PresetsPanel" Grid.Row="6" Orientation="Horizontal" Margin="0,0,0,12" />
+
+            <!-- Fond : couleur + opacité -->
+            <Grid Grid.Row="7" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="42" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Fond" VerticalAlignment="Center"
+                           Foreground="{DynamicResource Pofus.TextMuted}" />
+                <Border Grid.Column="1" x:Name="BackgroundSwatch" Width="22" Height="22"
+                        CornerRadius="4" BorderThickness="1"
+                        BorderBrush="{DynamicResource Pofus.BorderStrong}" Margin="0,0,6,0" />
+                <TextBox Grid.Column="2" x:Name="BackgroundHex" Width="88" VerticalAlignment="Center"
+                         LostFocus="OnBackgroundHexChanged" KeyDown="OnHexKeyDown" />
+                <Slider Grid.Column="3" x:Name="BackgroundOpacitySlider"
+                        Minimum="0.15" Maximum="1" VerticalAlignment="Center" Margin="10,0,6,0"
+                        ValueChanged="OnBackgroundOpacityChanged" />
+                <TextBlock Grid.Column="4" x:Name="BackgroundOpacityText" VerticalAlignment="Center"
+                           Foreground="{DynamicResource Pofus.TextMuted}" />
+            </Grid>
+
+            <!-- Texte : couleur -->
+            <Grid Grid.Row="8" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Texte" VerticalAlignment="Center"
+                           Foreground="{DynamicResource Pofus.TextMuted}" />
+                <Border Grid.Column="1" x:Name="TextSwatch" Width="22" Height="22"
+                        CornerRadius="4" BorderThickness="1"
+                        BorderBrush="{DynamicResource Pofus.BorderStrong}" Margin="0,0,6,0" />
+                <TextBox Grid.Column="2" x:Name="TextHex" Width="88" VerticalAlignment="Center"
+                         LostFocus="OnTextHexChanged" KeyDown="OnHexKeyDown" />
+            </Grid>
+
+            <!-- Bordures : couleur + opacité -->
+            <Grid Grid.Row="9" Margin="0,0,0,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="80" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="42" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Bordures" VerticalAlignment="Center"
+                           Foreground="{DynamicResource Pofus.TextMuted}" />
+                <Border Grid.Column="1" x:Name="BorderSwatch" Width="22" Height="22"
+                        CornerRadius="4" BorderThickness="1"
+                        BorderBrush="{DynamicResource Pofus.BorderStrong}" Margin="0,0,6,0" />
+                <TextBox Grid.Column="2" x:Name="BorderHex" Width="88" VerticalAlignment="Center"
+                         LostFocus="OnBorderHexChanged" KeyDown="OnHexKeyDown" />
+                <Slider Grid.Column="3" x:Name="BorderOpacitySlider"
+                        Minimum="0.15" Maximum="1" VerticalAlignment="Center" Margin="10,0,6,0"
+                        ValueChanged="OnBorderOpacityChanged" />
+                <TextBlock Grid.Column="4" x:Name="BorderOpacityText" VerticalAlignment="Center"
+                           Foreground="{DynamicResource Pofus.TextMuted}" />
+            </Grid>
+
+            <Button Grid.Row="10" Content="Réinitialiser l'apparence"
+                    HorizontalAlignment="Left" Click="OnResetAppearanceClick" />
+
+            <TextBlock x:Name="StatusText" Grid.Row="11" Margin="0,14,0,0"
+                       TextWrapping="Wrap" Foreground="{StaticResource Pofus.Accent}" />
+        </Grid>
+    </Border>
+</Window>
