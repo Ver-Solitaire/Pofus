@@ -1,0 +1,67 @@
+<Window x:Class="Pofus.Hud.Modules.Craft.CraftWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Pofus — Atelier"
+        Width="470" Height="560"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ResizeMode="CanResize"
+        MinWidth="380" MinHeight="320"
+        Topmost="True"
+        WindowStartupLocation="CenterScreen">
+    <Border Style="{StaticResource Pofus.PanelBorder}" Margin="14">
+        <Grid Margin="18">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid x:Name="HeaderBar" Grid.Row="0" MouseLeftButtonDown="OnHeaderMouseLeftButtonDown">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Atelier DofusBook" Style="{StaticResource Pofus.WindowTitle}" />
+                <Button Grid.Column="1" Style="{StaticResource Pofus.CloseButton}" Click="OnCloseClick" />
+            </Grid>
+
+            <Border Grid.Row="1" Height="1" Margin="0,12" Background="{DynamicResource Pofus.BorderSubtle}" />
+
+            <Grid Grid.Row="2" Margin="0,0,0,8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="UrlBox" Grid.Column="0" VerticalAlignment="Center"
+                         Margin="0,0,6,0" KeyDown="OnUrlKeyDown"
+                         ToolTip="Collez le lien de votre atelier DofusBook, puis Entrée" />
+                <Button x:Name="ImportButton" Grid.Column="1" Content="Importer" Click="OnImportClick" />
+            </Grid>
+
+            <TextBlock x:Name="StatusText" Grid.Row="4" TextWrapping="Wrap" Margin="0,0,0,8"
+                       Foreground="{StaticResource Pofus.Accent}" />
+
+            <TextBlock x:Name="SummaryText" Grid.Row="5" Margin="0,0,0,8"
+                       Foreground="{DynamicResource Pofus.TextPrimary}" FontWeight="SemiBold" />
+
+            <ScrollViewer Grid.Row="6" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock x:Name="EmptyStateText"
+                               Text="Collez le lien de votre atelier ci-dessus, puis Importer."
+                               Foreground="{DynamicResource Pofus.TextMuted}" />
+                    <StackPanel x:Name="ResourceRowsPanel" />
+                </StackPanel>
+            </ScrollViewer>
+
+            <TextBlock x:Name="ProgressText" Grid.Row="7" Margin="0,10,0,0"
+                       Foreground="{DynamicResource Pofus.TextMuted}" />
+        </Grid>
+    </Border>
+</Window>
