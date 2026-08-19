@@ -51,12 +51,6 @@ Name: "{userstartup}\{#AppName}"; Filename: "{app}\{#AppExeName}"; Tasks: startu
 [Run]
 Filename: "{app}\{#AppExeName}"; Description: "Lancer {#AppName}"; Flags: nowait postinstall skipifsilent
 
-[UninstallDelete]
-; Les fichiers créés à l'exécution (configuration, journaux, profil du
-; navigateur embarqué) vivent hors du dossier d'installation : on les retire
-; explicitement pour ne rien laisser derrière.
-Type: filesandordirs; Name: "{userappdata}\Pofus"
-
 [Code]
 // Pofus lit les ateliers DofusBook via WebView2, présent par défaut sur
 // Windows 11 mais pas forcément sur Windows 10 : on prévient plutôt que de
@@ -79,4 +73,25 @@ begin
            'Pofus s''installera et fonctionnera, mais l''import d''un atelier DofusBook restera indisponible' + #13#10 +
            'tant que ce composant n''est pas installé (gratuit, fourni par Microsoft).',
            mbInformation, MB_OK);
+end;
+
+// Les réglages, la liste de craft et les journaux vivent dans %APPDATA%\Pofus,
+// hors du dossier d'installation. Ils sont conservés par défaut — une
+// désinstallation peut n'être qu'une étape avant une réinstallation, et perdre
+// une checklist en cours sans avertissement serait brutal. La suppression est
+// donc proposée, jamais imposée, et jamais en mode silencieux.
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  DataDir: String;
+begin
+  if CurUninstallStep = usPostUninstall then
+  begin
+    DataDir := ExpandConstant('{userappdata}\Pofus');
+    if DirExists(DataDir) and (not UninstallSilent) then
+      if MsgBox('Supprimer aussi vos réglages Pofus et votre liste de craft ?' + #13#10 + #13#10 +
+                DataDir + #13#10 + #13#10 +
+                'Répondez Non si vous comptez réinstaller Pofus.',
+                mbConfirmation, MB_YESNO) = IDYES then
+        DelTree(DataDir, True, True, True);
+  end;
 end;

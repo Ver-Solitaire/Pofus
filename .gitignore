@@ -30,3 +30,4 @@ publish-*/
 dist/
 *.zip
 installer/Output/
+portable/
