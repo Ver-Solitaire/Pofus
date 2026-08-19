@@ -1,50 +1,85 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+- Version change: [TEMPLATE] → 1.0.0 (initial ratification)
+- Modified principles: n/a (first ratification, all principles newly defined)
+- Added sections: Core Principles (I–V), Contraintes Techniques, Workflow de Développement, Governance
+- Removed sections: none
+- Templates requiring follow-up: none — plan/spec/tasks templates already reference
+  the constitution generically and need no structural change.
+- Deferred TODOs: TECH_STACK is intentionally left open; finalize during /speckit-plan
+  for the first feature rather than locking it here.
+-->
+
+# Pofus Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Robustesse avant tout (NON-NÉGOCIABLE)
+Chaque chemin d'erreur DOIT être géré explicitement et journalisé ; les blocs
+`except` silencieux (`except: pass`) sont interdits. Toute intégration système
+fragile (fenêtres externes, périphériques, réseau) DOIT échouer proprement,
+sans crash de l'application ni état incohérent laissé derrière elle. La
+qualité de production prime sur la vitesse de livraison : une fonctionnalité
+incomplète ou mal gérée en cas d'erreur n'est pas mergeable.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. Fluidité et performance mesurées
+Le logiciel DOIT rester réactif : aucune opération bloquante (E/S, appels
+Win32, réseau) ne s'exécute sur le thread d'interface. Les automatisations
+(clics, macros, bascules de personnages) DOIVENT viser une latence perçue
+minimale. Toute optimisation DOIT être justifiée par une amélioration
+mesurable (latence, usage CPU/mémoire) et non ajoutée par anticipation.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Séparation stricte des responsabilités
+L'architecture DOIT séparer clairement : configuration/persistance, logique
+métier, interface utilisateur, et intégration système (Win32, clavier,
+systray). Chaque module DOIT être testable indépendamment de l'interface
+graphique. Pas de logique métier dans le code d'UI.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Intégration Windows fiable
+Les interactions bas niveau (API Win32, dispositions clavier, gestion multi-
+fenêtres, DPI) DOIVENT être encapsulées dans des modules dédiés avec
+détection explicite des cas d'échec (fenêtre introuvable, API indisponible,
+conflit avec un autre logiciel). Aucune supposition silencieuse sur l'état du
+système externe.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Usage personnel et respect des données locales
+Le logiciel reste un outil d'usage personnel, exécuté localement, sans
+transmission de données (comptes, identifiants, configuration) vers un tiers
+sans action explicite de l'utilisateur. Toute fonctionnalité réseau
+(vérification de version, télémétrie) DOIT être opt-in et clairement
+documentée.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Contraintes Techniques
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- Plateforme cible : Windows 10/11 exclusivement (dépendance à l'API Win32).
+- Stack technique définitive non figée ici : elle est choisie et justifiée
+  lors du `/speckit-plan` de la première fonctionnalité, en cohérence avec
+  les principes ci-dessus (réactivité, séparation des responsabilités).
+- Pofus est une réécriture complète inspirée fonctionnellement d'un projet
+  existant (gestion multi-comptes, macros, menu radial, overlay, systray) :
+  le code source de référence sert de spécification comportementale, pas de
+  base à copier telle quelle — chaque module est reconçu pour la robustesse
+  et la performance.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+## Workflow de Développement
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- Toute nouvelle fonctionnalité suit le cycle spec-kit : `/speckit-specify` →
+  `/speckit-plan` → `/speckit-tasks` → `/speckit-implement`.
+- `/speckit-analyze` est recommandé avant `/speckit-implement` dès qu'une
+  fonctionnalité touche l'intégration système (Win32, macros, hotkeys), zone
+  la plus à risque de régressions silencieuses.
+- Les tâches touchant la Principe I (gestion d'erreurs) DOIVENT inclure un
+  scénario d'échec explicite dans leurs critères d'acceptation.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+La constitution prévaut sur toute autre pratique ou préférence ponctuelle.
+Toute modification passe par `/speckit-constitution`, avec mise à jour du
+numéro de version selon le versionnage sémantique (MAJOR : suppression ou
+redéfinition incompatible d'un principe ; MINOR : ajout de principe ou
+extension notable ; PATCH : clarification sans changement de sens). Les
+revues de plan (`/speckit-plan`, `/speckit-analyze`) DOIVENT vérifier la
+conformité aux principes ci-dessus ; toute dérogation DOIT être justifiée
+explicitement dans le plan concerné.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-08-18 | **Last Amended**: 2026-08-18
