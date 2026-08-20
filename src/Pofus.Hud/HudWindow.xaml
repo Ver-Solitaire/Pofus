@@ -37,6 +37,20 @@
             </Border>
 
             <StackPanel x:Name="ModuleSlotsPanel" Orientation="Horizontal" />
+
+            <!--
+                Quitting Pofus. Set apart from the modules by a rule and a gap:
+                the bar floats over the game, and a control that ends the session
+                should not sit flush against the ones used constantly.
+            -->
+            <Border Width="1" Margin="10,6,0,6"
+                    Background="{DynamicResource Pofus.BorderSubtle}" />
+            <Button x:Name="QuitButton"
+                    Style="{StaticResource Pofus.CloseButton}"
+                    Margin="8,0,0,0"
+                    VerticalAlignment="Center"
+                    ToolTip="Quitter Pofus"
+                    Click="OnQuitClick" />
         </StackPanel>
     </Border>
 </Window>

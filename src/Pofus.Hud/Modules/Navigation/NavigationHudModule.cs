@@ -133,7 +133,10 @@ public sealed class NavigationHudModule : IHudModule
 
     private void OpenShortcutsWindow()
     {
-        if (_shortcutsWindow is { IsLoaded: true })
+        // Tested against null, not IsLoaded: WPF leaves IsLoaded true after a
+        // window is closed, so the old check reactivated a dead window and the
+        // shortcuts could never be reopened once shut.
+        if (_shortcutsWindow is not null)
         {
             _shortcutsWindow.Activate();
             return;
@@ -147,6 +150,7 @@ public sealed class NavigationHudModule : IHudModule
 
         _shortcutsWindow = new NavigationShortcutsWindow(
             _shortcutStore, _hotkeyListener, _panels());
+        _shortcutsWindow.Closed += (_, _) => _shortcutsWindow = null;
         _shortcutsWindow.Show();
     }
 }

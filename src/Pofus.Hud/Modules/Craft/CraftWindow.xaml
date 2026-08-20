@@ -61,7 +61,7 @@
             </StackPanel>
 
             <TextBlock x:Name="StatusText" Grid.Row="4" TextWrapping="Wrap" Margin="0,0,0,8"
-                       Foreground="{StaticResource Pofus.Accent}" />
+                       Foreground="{DynamicResource Pofus.TextPrimary}" />
 
             <TextBlock x:Name="SummaryText" Grid.Row="5" Margin="0,0,0,8"
                        Foreground="{DynamicResource Pofus.TextPrimary}" FontWeight="SemiBold" />

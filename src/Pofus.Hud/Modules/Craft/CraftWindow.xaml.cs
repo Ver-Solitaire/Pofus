@@ -43,6 +43,12 @@ public partial class CraftWindow : Window
         TopmostKeeper.Attach(this, topmostController, foregroundWatcher, win32Api);
 
         Loaded += async (_, _) => await LoadAsync();
+
+        // The atelier was seen vanishing once during testing with nothing in the
+        // log to say why. Closing is a deliberate act — the ✕, or the module
+        // shutting down — so recording it tells a future disappearance apart
+        // from a genuine close.
+        Closed += (_, _) => _logger.LogInfo("Fenêtre Atelier fermée.");
     }
 
     private async Task LoadAsync()
@@ -72,7 +78,8 @@ public partial class CraftWindow : Window
     // from the keyboard or from automation, where Click never fires.
     private void OnToggleEquipmentChanged(object sender, RoutedEventArgs e) => RenderEquipment();
 
-    private void OnHeaderMouseLeftButtonDown(object sender, MouseButtonEventArgs e) => DragMove();
+    private void OnHeaderMouseLeftButtonDown(object sender, MouseButtonEventArgs e) =>
+        WindowPlacement.BeginDrag(this, e);
 
     private void OnCloseClick(object sender, RoutedEventArgs e) => Close();
 
@@ -140,6 +147,11 @@ public partial class CraftWindow : Window
         // only resources that genuinely left the workshop lose their state.
         var stillPresent = resources.Select(r => r.ItemId).ToHashSet();
         _state.GatheredItemIds.RemoveWhere(id => !stillPresent.Contains(id));
+
+        // Same rule for the "crafted" marks: only equipment that genuinely left
+        // the workshop loses its state.
+        var stillCrafted = crafts.Select(c => c.ItemId).ToHashSet();
+        _state.CraftedItemIds.RemoveWhere(id => !stillCrafted.Contains(id));
         _state.WorkshopUrl = workshopUrl;
         _state.Equipment = crafts
             .Select(c => new CraftItem(c.ItemId, c.Name, c.Quantity, c.Picture))
@@ -198,7 +210,10 @@ public partial class CraftWindow : Window
         {
             foreach (var item in _state.Equipment.OrderBy(i => i.Name, StringComparer.CurrentCultureIgnoreCase))
             {
-                EquipmentTilesPanel.Children.Add(new EquipmentTileView(item, _imageLoader));
+                var tile = new EquipmentTileView(
+                    item, _imageLoader, _state.CraftedItemIds.Contains(item.ItemId));
+                tile.CraftedChanged += OnCraftedChanged;
+                EquipmentTilesPanel.Children.Add(tile);
             }
 
             // Remember how wide the list was so collapsing restores exactly the
@@ -214,6 +229,20 @@ public partial class CraftWindow : Window
             MinWidth = CollapsedMinWidth;
             Width = _collapsedWidth;
         }
+    }
+
+    private async void OnCraftedChanged(int itemId, bool isCrafted)
+    {
+        if (isCrafted)
+        {
+            _state.CraftedItemIds.Add(itemId);
+        }
+        else
+        {
+            _state.CraftedItemIds.Remove(itemId);
+        }
+
+        await _stateStore.SaveAsync(_state);
     }
 
     private async void OnGatheredChanged(int itemId, bool isGathered)
@@ -257,7 +286,9 @@ public partial class CraftWindow : Window
 
     private void SetStatus(string message, bool isError)
     {
-        StatusText.Foreground = (Brush)FindResource(isError ? "Pofus.Danger" : "Pofus.Accent");
+        // Ordinary progress reads as plain text; only a failure is coloured, so
+        // the colour still means something when it appears.
+        StatusText.Foreground = (Brush)FindResource(isError ? "Pofus.Danger" : "Pofus.TextPrimary");
         StatusText.Text = message;
     }
 }

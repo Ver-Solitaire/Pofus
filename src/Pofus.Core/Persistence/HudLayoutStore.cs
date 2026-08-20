@@ -66,14 +66,7 @@ public sealed class HudLayoutStore : IHudLayoutStore
     {
         try
         {
-            var directory = Path.GetDirectoryName(_filePath);
-            if (!string.IsNullOrEmpty(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            await using var stream = File.Create(_filePath);
-            await JsonSerializer.SerializeAsync(stream, layout, SerializerOptions, cancellationToken);
+            await JsonFile.WriteAtomicAsync(_filePath, layout, SerializerOptions, cancellationToken);
         }
         catch (IOException ex)
         {

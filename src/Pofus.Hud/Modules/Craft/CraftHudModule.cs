@@ -65,13 +65,17 @@ public sealed class CraftHudModule : IHudModule
 
     private void OpenWindow()
     {
-        if (_window is { IsLoaded: true })
+        // Tested against null, not IsLoaded: WPF leaves IsLoaded true after a
+        // window is closed, so the old check called Activate() on a dead window
+        // and the atelier could never be reopened once shut.
+        if (_window is not null)
         {
             _window.Activate();
             return;
         }
 
         _window = new CraftWindow(_stateStore, _logger, _topmostController, _foregroundWatcher, _win32Api);
+        _window.Closed += (_, _) => _window = null;
         _window.Show();
     }
 }

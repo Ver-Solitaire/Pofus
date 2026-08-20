@@ -69,8 +69,13 @@ public sealed class TopmostKeeper
             return;
         }
 
-        // SetWinEventHook callbacks arrive off the WPF dispatcher thread.
-        _window.Dispatcher.Invoke(() => _topmostController.BringToTop(_selfHandle));
+        // Marshalled to the dispatcher without blocking: the callback can arrive
+        // while the UI thread is inside the modal loop of a window drag, or once
+        // the dispatcher has begun shutting down.
+        if (!_window.Dispatcher.HasShutdownStarted)
+        {
+            _window.Dispatcher.BeginInvoke(() => _topmostController.BringToTop(_selfHandle));
+        }
     }
 
     private bool IsOwnProcessWindow(nint windowHandle)

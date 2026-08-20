@@ -15,10 +15,22 @@
     <Color x:Key="Pofus.BorderSubtle.Color">#FF34343F</Color>
     <Color x:Key="Pofus.BorderStrong.Color">#FF46464F</Color>
     <Color x:Key="Pofus.Accent.Color">#FFD4A64A</Color>
-    <Color x:Key="Pofus.TextPrimary.Color">#FFF2EEE6</Color>
-    <Color x:Key="Pofus.TextMuted.Color">#FF9A9AA5</Color>
+    <Color x:Key="Pofus.TextPrimary.Color">#FFFFFFFF</Color>
+    <Color x:Key="Pofus.TextMuted.Color">#FFC8C8D0</Color>
     <Color x:Key="Pofus.TextDisabled.Color">#FF5A5A63</Color>
     <Color x:Key="Pofus.Danger.Color">#FFE5484D</Color>
+    <!-- "Done": the crafted marker on the equipment tiles. Green reads as
+         completed without needing a label. -->
+    <Color x:Key="Pofus.Success.Color">#FF4ED37A</Color>
+    <!-- Hairline outline framing an equipment tile. -->
+    <Color x:Key="Pofus.Outline.Color">#66FFFFFF</Color>
+    <Color x:Key="Pofus.OutlineHover.Color">#CCFFFFFF</Color>
+    <!-- Equipment tiles are filled with the same black DofusBook composites its
+         item icons over, so the icon's own square dissolves into the tile
+         instead of sitting inside it as a second box. Cutting that black out
+         instead only exposed the artwork's white outline stroke and the WebP
+         chroma speckles along its silhouette. -->
+    <Color x:Key="Pofus.TileFill.Color">#FF000000</Color>
 
     <!-- ===== Tokens: brushes (static usage) ===== -->
     <SolidColorBrush x:Key="Pofus.Bg" Color="{StaticResource Pofus.Bg.Color}" />
@@ -31,6 +43,10 @@
     <SolidColorBrush x:Key="Pofus.TextMuted" Color="{StaticResource Pofus.TextMuted.Color}" />
     <SolidColorBrush x:Key="Pofus.TextDisabled" Color="{StaticResource Pofus.TextDisabled.Color}" />
     <SolidColorBrush x:Key="Pofus.Danger" Color="{StaticResource Pofus.Danger.Color}" />
+    <SolidColorBrush x:Key="Pofus.Success" Color="{StaticResource Pofus.Success.Color}" />
+    <SolidColorBrush x:Key="Pofus.Outline" Color="{StaticResource Pofus.Outline.Color}" />
+    <SolidColorBrush x:Key="Pofus.OutlineHover" Color="{StaticResource Pofus.OutlineHover.Color}" />
+    <SolidColorBrush x:Key="Pofus.TileFill" Color="{StaticResource Pofus.TileFill.Color}" />
 
     <!-- ===== Tokens: typography =====
          Segoe UI Variable is the Windows 11 UI face: better spacing and a
@@ -120,8 +136,12 @@
         <Setter Property="CornerRadius" Value="{StaticResource Pofus.Radius.Slot}" />
     </Style>
 
-    <!-- ===== Window header (custom chrome — see AccountManagerWindow / NavigationShortcutsWindow) ===== -->
-    <Style x:Key="Pofus.WindowTitle" TargetType="TextBlock">
+    <!-- ===== Window header (custom chrome — see AccountManagerWindow / NavigationShortcutsWindow) =====
+         BasedOn matters: a keyed style replaces the implicit TextBlock style
+         outright, so without it these titles lost their Foreground and fell back
+         to WPF's default black — invisible on a dark panel. -->
+    <Style x:Key="Pofus.WindowTitle" TargetType="TextBlock"
+           BasedOn="{StaticResource {x:Type TextBlock}}">
         <Setter Property="FontFamily" Value="{StaticResource Pofus.Font.Display}" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="FontSize" Value="14" />
@@ -202,6 +222,66 @@
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Chrome" Property="Opacity" Value="0.75" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Chrome" Property="Opacity" Value="0.4" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ===== ToggleButton — the Button look, plus a lit "on" state =====
+         Without this, a plain ToggleButton (the workshop's "Voir les
+         équipements") fell back to stock Windows chrome: a grey-white slab in
+         the middle of a dark panel. Keyed styles such as Pofus.StarToggle keep
+         priority; CheckBox is matched by its own implicit style, not this one. -->
+    <Style TargetType="ToggleButton">
+        <Setter Property="Foreground" Value="{DynamicResource Pofus.TextPrimary}" />
+        <Setter Property="FontFamily" Value="{StaticResource Pofus.Font.Text}" />
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Padding" Value="10,5" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Chrome"
+                            CornerRadius="{StaticResource Pofus.Radius.Control}"
+                            BorderThickness="1.2"
+                            Padding="{TemplateBinding Padding}">
+                        <Border.Background>
+                            <SolidColorBrush Color="{StaticResource Pofus.SurfaceRaised.Color}" />
+                        </Border.Background>
+                        <Border.BorderBrush>
+                            <SolidColorBrush Color="{StaticResource Pofus.BorderSubtle.Color}" />
+                        </Border.BorderBrush>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <!-- Checked first, so hover can still brighten it below. -->
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Chrome" Property="Background">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource Pofus.SurfaceHover.Color}" />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter TargetName="Chrome" Property="BorderBrush">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource Pofus.Accent.Color}" />
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="Foreground" Value="{StaticResource Pofus.Accent}" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Chrome" Property="BorderBrush">
+                                <Setter.Value>
+                                    <SolidColorBrush Color="{StaticResource Pofus.Accent.Color}" />
+                                </Setter.Value>
+                            </Setter>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="Chrome" Property="Opacity" Value="0.75" />

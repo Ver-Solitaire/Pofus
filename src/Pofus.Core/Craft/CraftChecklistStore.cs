@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Pofus.Core.Logging;
+using Pofus.Core.Persistence;
 
 namespace Pofus.Core.Craft;
 
@@ -22,6 +23,14 @@ public sealed class CraftState
     public List<RequiredResource> Resources { get; set; } = [];
 
     public HashSet<int> GatheredItemIds { get; set; } = [];
+
+    /// <summary>
+    /// Equipment already crafted, marked by clicking its tile. Kept apart from
+    /// <see cref="GatheredItemIds"/>: buying a resource and having finished the
+    /// item are two different milestones, and an equipment id can collide with
+    /// a resource id.
+    /// </summary>
+    public HashSet<int> CraftedItemIds { get; set; } = [];
 }
 
 public interface ICraftStateStore
@@ -79,14 +88,7 @@ public sealed class CraftStateStore : ICraftStateStore
     {
         try
         {
-            var directory = Path.GetDirectoryName(_filePath);
-            if (!string.IsNullOrEmpty(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            await using var stream = File.Create(_filePath);
-            await JsonSerializer.SerializeAsync(stream, state, SerializerOptions, cancellationToken);
+            await JsonFile.WriteAtomicAsync(_filePath, state, SerializerOptions, cancellationToken);
         }
         catch (IOException ex)
         {

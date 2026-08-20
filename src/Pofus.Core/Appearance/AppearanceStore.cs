@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Pofus.Core.Logging;
+using Pofus.Core.Persistence;
 
 namespace Pofus.Core.Appearance;
 
@@ -44,9 +45,16 @@ public sealed class AppearanceStore : IAppearanceStore
 
         try
         {
-            await using var stream = File.OpenRead(_filePath);
-            var preferences = await JsonSerializer.DeserializeAsync<AppearancePreferences>(
-                stream, SerializerOptions, cancellationToken);
+            AppearancePreferences? preferences;
+
+            // Scoped so the read handle is closed before the migration below can
+            // rewrite the same path.
+            await using (var stream = File.OpenRead(_filePath))
+            {
+                preferences = await JsonSerializer.DeserializeAsync<AppearancePreferences>(
+                    stream, SerializerOptions, cancellationToken);
+            }
+
             if (preferences is null)
             {
                 return AppearancePreferences.CreateDefault();
@@ -54,6 +62,18 @@ public sealed class AppearanceStore : IAppearanceStore
 
             // A hand-edited file must not be able to make windows invisible.
             preferences.ClampOpacities();
+
+            if (preferences.UpgradeLegacyTextColor())
+            {
+                _logger.LogInfo(
+                    "Couleur de texte passée du blanc cassé au blanc pur (nouveau réglage " +
+                    "par défaut). Elle reste modifiable dans les réglages.");
+
+                // Written back straight away so the migration runs once instead
+                // of announcing itself on every start.
+                await SaveAsync(preferences, cancellationToken);
+            }
+
             return preferences;
         }
         catch (JsonException ex)
@@ -72,14 +92,7 @@ public sealed class AppearanceStore : IAppearanceStore
     {
         try
         {
-            var directory = Path.GetDirectoryName(_filePath);
-            if (!string.IsNullOrEmpty(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            await using var stream = File.Create(_filePath);
-            await JsonSerializer.SerializeAsync(stream, preferences, SerializerOptions, cancellationToken);
+            await JsonFile.WriteAtomicAsync(_filePath, preferences, SerializerOptions, cancellationToken);
         }
         catch (IOException ex)
         {

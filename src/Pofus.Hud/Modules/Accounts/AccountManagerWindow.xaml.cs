@@ -36,7 +36,8 @@ public partial class AccountManagerWindow : Window
         Closed += (_, _) => _refreshTimer.Stop();
     }
 
-    private void OnHeaderMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e) => DragMove();
+    private void OnHeaderMouseLeftButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e) =>
+        WindowPlacement.BeginDrag(this, e);
 
     private void OnCloseClick(object sender, RoutedEventArgs e) => Close();
 

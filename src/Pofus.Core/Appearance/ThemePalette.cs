@@ -38,9 +38,11 @@ public static class ThemePalette
             new(SurfaceRaised, backgroundAlpha, background.Lighten(0.10)),
 
             // Text keeps its hue; the muted/disabled variants fade via alpha so
-            // they stay correct over any background color.
+            // they stay correct over any background color. Muted stays clearly
+            // the same colour as primary, just quieter — it marks secondary
+            // information, it is not meant to read as grey.
             new(TextPrimary, 0xFF, text),
-            new(TextMuted, 0xA6, text),
+            new(TextMuted, 0xCC, text),
             new(TextDisabled, 0x66, text),
 
             new(BorderSubtle, borderAlpha, border),

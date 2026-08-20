@@ -12,6 +12,12 @@ namespace Pofus.Hud.Modules.Craft;
 /// through WIC — DofusBook publishes no other format for these icons — and a
 /// missing codec or a failed download simply leaves the row without an image
 /// rather than breaking the list.
+///
+/// The icons carry no alpha channel: the artwork arrives already composited
+/// over black, and it is drawn to be read that way — it has a white outline
+/// stroke, and the WebP chroma subsampling leaves coloured speckles along the
+/// silhouette. Cutting the black out exposes both, so the views put the icons
+/// on a black backdrop instead of fighting the asset.
 /// </summary>
 public sealed class ItemImageLoader
 {

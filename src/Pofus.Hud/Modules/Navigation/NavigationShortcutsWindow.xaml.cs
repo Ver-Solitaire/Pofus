@@ -57,7 +57,8 @@ public partial class NavigationShortcutsWindow : Window
 
     private void EndCaptureMode() => _hotkeyListener.ResumeAll();
 
-    private void OnHeaderMouseLeftButtonDown(object sender, MouseButtonEventArgs e) => DragMove();
+    private void OnHeaderMouseLeftButtonDown(object sender, MouseButtonEventArgs e) =>
+        WindowPlacement.BeginDrag(this, e);
 
     private void OnCloseClick(object sender, RoutedEventArgs e) => Close();
 

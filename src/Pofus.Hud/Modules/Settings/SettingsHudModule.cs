@@ -66,7 +66,10 @@ public sealed class SettingsHudModule : IHudModule
 
     private void OpenSettingsWindow()
     {
-        if (_settingsWindow is { IsLoaded: true })
+        // Tested against null, not IsLoaded: WPF leaves IsLoaded true after a
+        // window is closed, so the old check reactivated a dead window and the
+        // settings could never be reopened once shut.
+        if (_settingsWindow is not null)
         {
             _settingsWindow.Activate();
             return;
@@ -74,6 +77,7 @@ public sealed class SettingsHudModule : IHudModule
 
         _settingsWindow = new SettingsWindow(
             _preferencesStore, _startupRegistration, _appearanceStore, _themeApplier, _currentAppearance());
+        _settingsWindow.Closed += (_, _) => _settingsWindow = null;
         _settingsWindow.Show();
     }
 }

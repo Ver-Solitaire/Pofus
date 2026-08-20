@@ -30,6 +30,13 @@ public partial class HudWindow : Window
     private readonly DispatcherTimer _positionSaveTimer;
     private nint _selfHandle;
 
+    /// <summary>
+    /// Raised when the user asks to quit from the bar. Ending the application is
+    /// the composition root's call, not this window's — the same way the tray
+    /// menu's "Quitter" is wired there.
+    /// </summary>
+    public event Action? QuitRequested;
+
     public HudWindow(
         ITopmostWindowController topmostController,
         ForegroundWindowWatcher foregroundWatcher,
@@ -52,8 +59,7 @@ public partial class HudWindow : Window
         _positionSaveTimer = new DispatcherTimer { Interval = PositionSaveDebounce };
         _positionSaveTimer.Tick += OnPositionSaveTimerTick;
 
-        Left = _layout.WindowPosition.X;
-        Top = _layout.WindowPosition.Y;
+        RestorePersistedPosition();
 
         RenderModuleSlots();
 
@@ -97,6 +103,19 @@ public partial class HudWindow : Window
         }
     }
 
+    /// <summary>
+    /// Applies the saved position, kept inside the desktop: a HUD restored on a
+    /// monitor that no longer exists could not be dragged back into view.
+    /// </summary>
+    private void RestorePersistedPosition()
+    {
+        var (left, top) = WindowPlacement.ClampToDesktop(
+            _layout.WindowPosition.X, _layout.WindowPosition.Y);
+
+        Left = left;
+        Top = top;
+    }
+
     private void SchedulePersist()
     {
         _positionSaveTimer.Stop();
@@ -113,8 +132,7 @@ public partial class HudWindow : Window
         // instead of the Left/Top requested before Show(). Only start listening
         // for LocationChanged after this so we don't mistake that settling for a
         // genuine user drag and persist the wrong coordinates.
-        Left = _layout.WindowPosition.X;
-        Top = _layout.WindowPosition.Y;
+        RestorePersistedPosition();
         LocationChanged += OnLocationChanged;
 
         _foregroundWatcher.ForegroundWindowChanged += OnForegroundWindowChanged;
@@ -132,8 +150,14 @@ public partial class HudWindow : Window
             return;
         }
 
-        // SetWinEventHook callbacks arrive off the WPF dispatcher thread.
-        Dispatcher.Invoke(() => _topmostController.BringToTop(_selfHandle));
+        // Marshalled to the dispatcher, and never blocking: the callback can
+        // arrive while the UI thread sits in the modal loop of a window drag, or
+        // while the dispatcher is shutting down — a blocking Invoke would then
+        // stall or throw.
+        if (!Dispatcher.HasShutdownStarted)
+        {
+            Dispatcher.BeginInvoke(() => _topmostController.BringToTop(_selfHandle));
+        }
     }
 
     private bool IsOwnProcessWindow(nint windowHandle)
@@ -150,8 +174,10 @@ public partial class HudWindow : Window
     private void OnRootPanelMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         // Moves the whole HUD window; individual slot positions stay fixed (FR-008).
-        DragMove();
+        WindowPlacement.BeginDrag(this, e);
     }
+
+    private void OnQuitClick(object sender, RoutedEventArgs e) => QuitRequested?.Invoke();
 
     private void OnLocationChanged(object? sender, EventArgs e)
     {
@@ -175,7 +201,10 @@ public partial class HudWindow : Window
 
     private void OnClosed(object? sender, EventArgs e)
     {
+        // Unsubscribe only: the watcher is shared with the switcher widget and
+        // every TopmostKeeper, and belongs to the composition root, which
+        // disposes it on exit. Disposing it here unhooked it for all of them.
         _foregroundWatcher.ForegroundWindowChanged -= OnForegroundWindowChanged;
-        _foregroundWatcher.Dispose();
+        _positionSaveTimer.Tick -= OnPositionSaveTimerTick;
     }
 }

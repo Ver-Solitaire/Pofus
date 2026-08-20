@@ -19,6 +19,7 @@ namespace Pofus.Hud.Switcher;
 public partial class AccountChipView : UserControl
 {
     private nint _windowHandle;
+    private bool? _isLeader;
 
     public event Action<nint>? Activated;
 
@@ -71,6 +72,16 @@ public partial class AccountChipView : UserControl
 
     public void SetLeaderState(bool isLeader)
     {
+        // The switcher re-binds every chip every two seconds. Restarting the
+        // animations on each pass reset the breathing halo to its first frame,
+        // so it never actually breathed — only re-act on a real change.
+        if (_isLeader == isLeader)
+        {
+            return;
+        }
+
+        _isLeader = isLeader;
+
         if (!isLeader)
         {
             LeaderHaloScale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
@@ -117,5 +128,13 @@ public partial class AccountChipView : UserControl
         return letters.Length > 0 ? new string(letters).ToUpperInvariant() : "?";
     }
 
-    private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e) => Activated?.Invoke(_windowHandle);
+    private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        // Marked handled so the click stops here. Left to bubble, it also reached
+        // the widget's drag handler, which then called DragMove() on a window
+        // that had just given the foreground away to the game — the exact
+        // sequence that crashed Pofus. Dragging stays on the grip.
+        e.Handled = true;
+        Activated?.Invoke(_windowHandle);
+    }
 }

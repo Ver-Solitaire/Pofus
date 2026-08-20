@@ -9,9 +9,7 @@ namespace Pofus.App;
 /// <summary>
 /// System tray affordance. Since feature 005 it is the guaranteed way back:
 /// it lists every hideable window so the user can bring one back even with no
-/// shortcut bound and every window hidden (FR-009). Uses
-/// SystemIcons.Application as a placeholder — a branded icon asset is still
-/// pending (see specs/001-hud-modulaire-dofus/tasks.md T027).
+/// shortcut bound and every window hidden (FR-009).
 /// </summary>
 internal sealed class TrayIconController : IDisposable
 {
@@ -36,9 +34,17 @@ internal sealed class TrayIconController : IDisposable
     }
 
     /// <summary>
-    /// The application icon, falling back to the generic Windows one rather
-    /// than leaving the tray empty — an invisible tray icon would strand the
-    /// user with no way to bring hidden windows back.
+    /// The application icon, at the exact size the notification area asks for.
+    ///
+    /// Requesting <see cref="SystemInformation.SmallIconSize"/> makes Windows
+    /// pick the matching frame from the .ico; the parameterless constructor
+    /// takes whichever frame comes first and leaves the shell to shrink it,
+    /// which turns the artwork to mush at 16 px and follows the display scaling
+    /// badly.
+    ///
+    /// Falls back to the generic Windows icon rather than leaving the tray
+    /// empty — an invisible tray icon would strand the user with no way to
+    /// bring hidden windows back.
     /// </summary>
     private static Icon LoadAppIcon()
     {
@@ -47,7 +53,8 @@ internal sealed class TrayIconController : IDisposable
             var path = Path.Combine(AppContext.BaseDirectory, "pofus.ico");
             if (File.Exists(path))
             {
-                return new Icon(path);
+                var size = SystemInformation.SmallIconSize;
+                return new Icon(path, size.Width, size.Height);
             }
         }
         catch (Exception ex) when (ex is IOException or ArgumentException)

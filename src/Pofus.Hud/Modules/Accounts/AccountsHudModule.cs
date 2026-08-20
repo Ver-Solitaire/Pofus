@@ -58,13 +58,17 @@ public sealed class AccountsHudModule : IHudModule
 
     private void OpenManager()
     {
-        if (_managerWindow is { IsLoaded: true })
+        // Tested against null, not IsLoaded: WPF leaves IsLoaded true after a
+        // window is closed, so the old check reactivated a dead window and the
+        // manager could never be reopened once shut.
+        if (_managerWindow is not null)
         {
             _managerWindow.Activate();
             return;
         }
 
         _managerWindow = new AccountManagerWindow(_detectionService, _preferencesStore);
+        _managerWindow.Closed += (_, _) => _managerWindow = null;
         _managerWindow.Show();
     }
 }

@@ -236,7 +236,8 @@ public partial class SettingsWindow : Window
         StatusText.Text = "L'avertissement de conflit logiciel réapparaîtra si détecté.";
     }
 
-    private void OnHeaderMouseLeftButtonDown(object sender, MouseButtonEventArgs e) => DragMove();
+    private void OnHeaderMouseLeftButtonDown(object sender, MouseButtonEventArgs e) =>
+        WindowPlacement.BeginDrag(this, e);
 
     private void OnCloseClick(object sender, RoutedEventArgs e) => Close();
 }

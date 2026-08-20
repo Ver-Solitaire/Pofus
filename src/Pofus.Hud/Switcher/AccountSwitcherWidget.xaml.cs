@@ -55,8 +55,7 @@ public partial class AccountSwitcherWidget : Window
         _widgetStore = widgetStore;
         _preferences = preferences;
 
-        Left = _preferences.Position.X;
-        Top = _preferences.Position.Y;
+        RestorePersistedPosition();
 
         _refreshTimer = new DispatcherTimer { Interval = RefreshInterval };
         _refreshTimer.Tick += async (_, _) => await RefreshAsync();
@@ -76,8 +75,7 @@ public partial class AccountSwitcherWidget : Window
 
         // Same settling issue as HudWindow (feature 001) — reassert the
         // persisted position now that the HWND fully exists.
-        Left = _preferences.Position.X;
-        Top = _preferences.Position.Y;
+        RestorePersistedPosition();
         LocationChanged += OnLocationChanged;
 
         _foregroundWatcher.ForegroundWindowChanged += OnForegroundWindowChanged;
@@ -98,12 +96,33 @@ public partial class AccountSwitcherWidget : Window
             return;
         }
 
-        Dispatcher.Invoke(() =>
+        // Non-blocking, and skipped once the dispatcher is going down: the
+        // callback can land while the UI thread is inside the modal loop of a
+        // window drag, or during shutdown.
+        if (Dispatcher.HasShutdownStarted)
+        {
+            return;
+        }
+
+        Dispatcher.BeginInvoke(() =>
         {
             _topmostController.BringToTop(_selfHandle);
             _currentForeground = newForegroundWindow;
             ApplyFocusHighlight();
         });
+    }
+
+    /// <summary>
+    /// Applies the saved position, kept inside the desktop — see
+    /// <see cref="WindowPlacement.ClampToDesktop"/>.
+    /// </summary>
+    private void RestorePersistedPosition()
+    {
+        var (left, top) = WindowPlacement.ClampToDesktop(
+            _preferences.Position.X, _preferences.Position.Y);
+
+        Left = left;
+        Top = top;
     }
 
     private async Task RefreshAsync()
@@ -122,20 +141,51 @@ public partial class AccountSwitcherWidget : Window
         EmptyStateText.Visibility = Visibility.Collapsed;
         ChipsPanel.Visibility = Visibility.Visible;
 
-        ChipsPanel.Children.Clear();
-        _chipsByHandle.Clear();
-        foreach (var account in accounts)
+        // Rebuilt in place rather than from scratch. This runs every two seconds:
+        // recreating every chip restarted the leader's breathing animation on each
+        // pass, and resized the window (SizeToContent) under the pointer while the
+        // user was dragging it.
+        SyncChips(accounts);
+        ApplyFocusHighlight();
+    }
+
+    private void SyncChips(IReadOnlyList<AccountSession> accounts)
+    {
+        foreach (var stale in _chipsByHandle.Keys.Except(accounts.Select(a => a.WindowHandle)).ToList())
         {
-            var chip = new AccountChipView { Margin = new Thickness(4, 0, 0, 0) };
+            var chip = _chipsByHandle[stale];
+            chip.Activated -= OnChipActivated;
+            ChipsPanel.Children.Remove(chip);
+            _chipsByHandle.Remove(stale);
+        }
+
+        for (var position = 0; position < accounts.Count; position++)
+        {
+            var account = accounts[position];
+            if (!_chipsByHandle.TryGetValue(account.WindowHandle, out var chip))
+            {
+                chip = new AccountChipView { Margin = new Thickness(4, 0, 0, 0) };
+                chip.Activated += OnChipActivated;
+                _chipsByHandle[account.WindowHandle] = chip;
+            }
+
             chip.Bind(
                 account.Pseudo, account.ClassName, account.WindowHandle, account.IsLeader,
                 _iconLoader.TryLoad(account.WindowHandle));
-            chip.Activated += OnChipActivated;
-            ChipsPanel.Children.Add(chip);
-            _chipsByHandle[account.WindowHandle] = chip;
-        }
 
-        ApplyFocusHighlight();
+            var currentIndex = ChipsPanel.Children.IndexOf(chip);
+            if (currentIndex == position)
+            {
+                continue;
+            }
+
+            if (currentIndex >= 0)
+            {
+                ChipsPanel.Children.RemoveAt(currentIndex);
+            }
+
+            ChipsPanel.Children.Insert(position, chip);
+        }
     }
 
     private void ApplyFocusHighlight()
@@ -160,7 +210,8 @@ public partial class AccountSwitcherWidget : Window
     private async void OnChipActivated(nint windowHandle) =>
         await Task.Run(() => _windowActivator.TryActivate(windowHandle));
 
-    private void OnRootPanelMouseLeftButtonDown(object sender, MouseButtonEventArgs e) => DragMove();
+    private void OnRootPanelMouseLeftButtonDown(object sender, MouseButtonEventArgs e) =>
+        WindowPlacement.BeginDrag(this, e);
 
     private void OnLocationChanged(object? sender, EventArgs e)
     {
@@ -185,7 +236,10 @@ public partial class AccountSwitcherWidget : Window
 
     private void OnClosed(object? sender, EventArgs e)
     {
+        // Unsubscribe only — the watcher is shared and owned by the composition
+        // root (see HudWindow.OnClosed).
         _foregroundWatcher.ForegroundWindowChanged -= OnForegroundWindowChanged;
-        _foregroundWatcher.Dispose();
+        _refreshTimer.Stop();
+        _positionSaveTimer.Tick -= OnPositionSaveTimerTick;
     }
 }

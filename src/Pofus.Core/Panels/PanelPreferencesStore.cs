@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Pofus.Core.Logging;
+using Pofus.Core.Persistence;
 
 namespace Pofus.Core.Panels;
 
@@ -66,14 +67,7 @@ public sealed class PanelPreferencesStore : IPanelPreferencesStore
     {
         try
         {
-            var directory = Path.GetDirectoryName(_filePath);
-            if (!string.IsNullOrEmpty(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            await using var stream = File.Create(_filePath);
-            await JsonSerializer.SerializeAsync(stream, preferences, SerializerOptions, cancellationToken);
+            await JsonFile.WriteAtomicAsync(_filePath, preferences, SerializerOptions, cancellationToken);
         }
         catch (IOException ex)
         {

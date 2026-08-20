@@ -5,6 +5,68 @@ Toutes les évolutions notables de Pofus sont consignées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et le versionnage suit [SemVer](https://semver.org/lang/fr/).
 
+## [Non publié]
+
+### Ajouté
+
+- Bouton de fermeture sur la barre du HUD, à droite, séparé des modules par un
+  filet. Il quitte Pofus, comme « Quitter » dans la zone de notification.
+- Atelier : les vignettes d'« Équipements à fabriquer » sont cliquables. Un clic
+  marque l'équipement comme fabriqué : contour vert et halo vert autour de la
+  vignette, visibles d'un coup d'œil sur tout le panneau. L'état est conservé,
+  indépendamment des cases de la liste de courses, qui suivent les ressources
+  achetées.
+
+### Modifié
+
+- Tous les textes sont en blanc pur. Les couleurs restent réglables dans
+  Apparence ; une couleur choisie par l'utilisateur n'est pas touchée.
+- Atelier : les vignettes d'équipement sont remplies du même noir que celui sur
+  lequel DofusBook compose ses icônes, et bordées d'un contour blanc d'un pixel
+  qui s'éclaire au survol. Le carré de l'icône se fond ainsi dans la vignette au
+  lieu d'y former une seconde boîte. Le détourer aurait été pire : ces images
+  n'ont pas de couche alpha et sont dessinées pour le noir — le retirer exposait
+  leur liseré blanc et les taches de couleur laissées par la compression WebP le
+  long de la silhouette.
+- L'icône de la zone de notification a un fond transparent : le médaillon est
+  détouré au cercle, sans le carré noir qui l'entourait. Le fichier `.ico`
+  fournit maintenant huit tailles, chargées à la taille exacte demandée par la
+  zone de notification au lieu d'être réduites après coup.
+
+### Corrigé
+
+- **Pofus se fermait brutalement en déplaçant le widget des personnages.**
+  Un clic sur une vignette de personnage activait la fenêtre du jeu *et*
+  remontait jusqu'au gestionnaire de déplacement, qui demandait alors à Windows
+  de déplacer une fenêtre dont le bouton n'était plus enfoncé. Le clic
+  s'arrête maintenant sur la vignette, et tout déplacement vérifie l'état réel
+  du bouton avant de commencer.
+- Une erreur imprévue n'arrête plus Pofus : elle est journalisée dans
+  `%APPDATA%\Pofus\logs\pofus.log` et signalée une fois. Les crashs
+  précédents ne laissaient aucune trace dans le journal.
+- Fermer le HUD ou le widget des personnages coupait la surveillance du premier
+  plan pour *toutes* les fenêtres Pofus, qui repassaient alors derrière le jeu.
+- Le halo du chef de groupe ne respirait pas : son animation repartait de zéro
+  toutes les deux secondes, à chaque rafraîchissement de la liste. Les vignettes
+  sont désormais mises à jour sur place au lieu d'être reconstruites, ce qui
+  évite aussi que le widget change de taille sous le curseur pendant un
+  déplacement.
+- Une fenêtre enregistrée sur un écran débranché depuis revenait hors du bureau,
+  donc impossible à rattraper à la souris. Sa position est ramenée dans le
+  bureau au démarrage.
+- Les fichiers de réglages sont écrits puis remplacés d'un bloc. Une
+  interruption pendant l'écriture laissait un fichier tronqué et perdait les
+  réglages concernés.
+- Les titres des fenêtres (« Atelier DofusBook », « Réglages », « Raccourcis »…)
+  s'affichaient dans le noir par défaut de WPF, donc illisibles sur un panneau
+  sombre : leur style remplaçait celui du texte courant au lieu d'en hériter.
+- Le bouton « Voir les équipements » gardait l'habillage Windows d'origine, un
+  bloc gris-blanc au milieu du panneau : les boutons à deux états n'avaient pas
+  de style Pofus.
+- Une fenêtre fermée par sa croix (Atelier, Comptes, Raccourcis, Réglages) ne
+  se rouvrait plus jusqu'au redémarrage de Pofus : `IsLoaded` reste vrai après
+  la fermeture en WPF, et le bouton du HUD réactivait donc une fenêtre morte.
+
 ## [1.1.0] — 2026-08-20
 
 ### Ajouté

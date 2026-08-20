@@ -52,6 +52,43 @@ public class ThemeColorTests
 
 public class AppearancePreferencesTests
 {
+    /// <summary>The off-white Pofus shipped with before the switch to pure white.</summary>
+    private static readonly ThemeColor LegacyText = new(0xF2, 0xEE, 0xE6);
+
+    [Fact]
+    public void CreateDefault_UsesPureWhiteText()
+    {
+        Assert.Equal(new ThemeColor(0xFF, 0xFF, 0xFF), AppearancePreferences.CreateDefault().Text);
+    }
+
+    [Fact]
+    public void UpgradeLegacyTextColor_MovesAnUntouchedFileToPureWhite()
+    {
+        var preferences = new AppearancePreferences { Text = LegacyText };
+
+        Assert.True(preferences.UpgradeLegacyTextColor());
+        Assert.Equal(new ThemeColor(0xFF, 0xFF, 0xFF), preferences.Text);
+    }
+
+    [Fact]
+    public void UpgradeLegacyTextColor_LeavesAColourTheUserActuallyChose()
+    {
+        var chosen = new ThemeColor(0x8F, 0xD8, 0xFF);
+        var preferences = new AppearancePreferences { Text = chosen };
+
+        Assert.False(preferences.UpgradeLegacyTextColor());
+        Assert.Equal(chosen, preferences.Text);
+    }
+
+    [Fact]
+    public void UpgradeLegacyTextColor_IsIdempotent()
+    {
+        var preferences = new AppearancePreferences { Text = LegacyText };
+        preferences.UpgradeLegacyTextColor();
+
+        Assert.False(preferences.UpgradeLegacyTextColor());
+    }
+
     [Fact]
     public void ClampOpacities_EnforcesTheFloor_SoAWindowCanNeverBecomeInvisible()
     {
