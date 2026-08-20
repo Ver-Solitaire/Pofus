@@ -20,6 +20,30 @@ public sealed record KeyCombo(KeyModifiers Modifiers, string Key, uint VirtualKe
 {
     private static readonly IReadOnlyDictionary<string, uint> SupportedKeys = BuildKeyTable();
 
+    /// <summary>Virtual-key codes Windows reserves for mouse buttons.</summary>
+    public const uint VkMiddleButton = 0x04;
+    public const uint VkExtraButton1 = 0x05;
+    public const uint VkExtraButton2 = 0x06;
+
+    /// <summary>
+    /// True for the extra mouse buttons. They cannot go through RegisterHotKey,
+    /// which is keyboard-only, so they are dispatched by a low-level mouse hook
+    /// instead — callers must route on this.
+    /// </summary>
+    public bool IsMouseButton =>
+        VirtualKeyCode is VkMiddleButton or VkExtraButton1 or VkExtraButton2;
+
+    public static KeyCombo ForMouseButton(KeyModifiers modifiers, uint virtualKeyCode) =>
+        new(modifiers, MouseButtonName(virtualKeyCode), virtualKeyCode);
+
+    private static string MouseButtonName(uint virtualKeyCode) => virtualKeyCode switch
+    {
+        VkMiddleButton => "Molette",
+        VkExtraButton1 => "Souris 4",
+        VkExtraButton2 => "Souris 5",
+        _ => "Souris",
+    };
+
     public static KeyCombo? TryParse(string text)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -71,11 +95,26 @@ public sealed record KeyCombo(KeyModifiers Modifiers, string Key, uint VirtualKe
             return null;
         }
 
+        var mouse = TryParseMouseButton(mainKey);
+        if (mouse is not null)
+        {
+            return ForMouseButton(modifiers, mouse.Value);
+        }
+
         var normalized = NormalizeKeyName(mainKey);
         return SupportedKeys.TryGetValue(normalized, out var vk)
             ? new KeyCombo(modifiers, normalized, vk)
             : null;
     }
+
+    private static uint? TryParseMouseButton(string token) =>
+        token.Replace(" ", string.Empty).ToLowerInvariant() switch
+        {
+            "mouse4" or "souris4" or "xbutton1" => VkExtraButton1,
+            "mouse5" or "souris5" or "xbutton2" => VkExtraButton2,
+            "mouse3" or "molette" or "mbutton" => VkMiddleButton,
+            _ => null,
+        };
 
     public string ToDisplayString()
     {

@@ -31,6 +31,7 @@ public sealed class GlobalHotkeyListener : IDisposable
     private readonly Dictionary<int, string> _actionsById = [];
     private readonly Dictionary<string, int> _idsByAction = new(StringComparer.Ordinal);
     private readonly Dictionary<string, KeyCombo> _combosByAction = new(StringComparer.Ordinal);
+    private readonly GlobalMouseHook _mouseHook;
     private int _nextHotkeyId;
     private bool _suspended;
 
@@ -49,6 +50,65 @@ public sealed class GlobalHotkeyListener : IDisposable
             ?? throw new InvalidOperationException(
                 "GlobalHotkeyListener requires the host window to be Loaded first.");
         _hwndSource.AddHook(WndProc);
+
+        // Installed lazily, only once a mouse button is actually bound: a
+        // low-level hook is called for every mouse move system-wide, and there
+        // is no reason to pay that when nobody uses mouse shortcuts.
+        _mouseHook = new GlobalMouseHook(logger);
+        _mouseHook.ButtonPressed += OnMouseButtonPressed;
+    }
+
+    /// <summary>
+    /// Runs on the hook thread, so it must return immediately. The action is
+    /// queued on the UI thread rather than executed here — Windows drops a
+    /// low-level hook that takes too long.
+    /// </summary>
+    private bool OnMouseButtonPressed(MouseButton button)
+    {
+        if (_suspended)
+        {
+            return false;
+        }
+
+        var modifiers = CurrentModifiers();
+        foreach (var (actionId, combo) in _combosByAction)
+        {
+            if (combo.IsMouseButton && combo.VirtualKeyCode == (uint)button && combo.Modifiers == modifiers)
+            {
+                var captured = actionId;
+                _hwndSource.Dispatcher.BeginInvoke(() => HotkeyPressed?.Invoke(captured));
+
+                // Swallow it: a button bound to Pofus should not also act in
+                // the game underneath.
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static KeyModifiers CurrentModifiers()
+    {
+        var modifiers = KeyModifiers.None;
+        if (IsDown(0x11)) { modifiers |= KeyModifiers.Control; } // VK_CONTROL
+        if (IsDown(0x12)) { modifiers |= KeyModifiers.Alt; }     // VK_MENU
+        if (IsDown(0x10)) { modifiers |= KeyModifiers.Shift; }   // VK_SHIFT
+        return modifiers;
+
+        static bool IsDown(int vk) => (Win32Native.GetAsyncKeyState(vk) & 0x8000) != 0;
+    }
+
+    private void SyncMouseHook()
+    {
+        var needed = !_suspended && _combosByAction.Values.Any(c => c.IsMouseButton);
+        if (needed)
+        {
+            _mouseHook.Install();
+        }
+        else
+        {
+            _mouseHook.Uninstall();
+        }
     }
 
     /// <summary>Registers (or re-registers, replacing any previous binding) an action's hotkey.</summary>
@@ -58,6 +118,15 @@ public sealed class GlobalHotkeyListener : IDisposable
         if (_suspended)
         {
             return; // ResumeAll() will register it
+        }
+
+        if (combo.IsMouseButton)
+        {
+            // Mouse buttons never reach RegisterHotKey; the hook handles them.
+            // Drop any keyboard registration this action had beforehand.
+            ReleaseHotkey(actionId);
+            SyncMouseHook();
+            return;
         }
 
         var id = GetOrCreateHotkeyId(actionId);
@@ -77,10 +146,16 @@ public sealed class GlobalHotkeyListener : IDisposable
         _actionsById[id] = actionId;
     }
 
-    /// <summary>Removes an action's hotkey, if one is currently registered.</summary>
+    /// <summary>Removes an action's shortcut, if one is currently registered.</summary>
     public void Unregister(string actionId)
     {
         _combosByAction.Remove(actionId);
+        ReleaseHotkey(actionId);
+        SyncMouseHook();
+    }
+
+    private void ReleaseHotkey(string actionId)
+    {
         if (!_idsByAction.TryGetValue(actionId, out var id))
         {
             return;
@@ -112,6 +187,10 @@ public sealed class GlobalHotkeyListener : IDisposable
         }
 
         _actionsById.Clear();
+
+        // The mouse hook must stand down too, or a bound button would be
+        // swallowed instead of reaching the capture UI.
+        SyncMouseHook();
     }
 
     /// <summary>Re-registers everything released by <see cref="SuspendAll"/>.</summary>
@@ -127,6 +206,8 @@ public sealed class GlobalHotkeyListener : IDisposable
         {
             RegisterOrReplace(actionId, combo);
         }
+
+        SyncMouseHook();
     }
 
     /// <summary>
@@ -193,6 +274,7 @@ public sealed class GlobalHotkeyListener : IDisposable
         _actionsById.Clear();
         _idsByAction.Clear();
         _combosByAction.Clear();
+        _mouseHook.Dispose();
         _hwndSource.RemoveHook(WndProc);
     }
 }

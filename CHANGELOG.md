@@ -5,6 +5,25 @@ Toutes les évolutions notables de Pofus sont consignées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et le versionnage suit [SemVer](https://semver.org/lang/fr/).
 
+## [Non publié]
+
+### Ajouté
+
+- Les boutons supplémentaires de la souris (molette, Souris 4, Souris 5)
+  peuvent servir de raccourci, avec modificateurs. Un bouton lié à Pofus est
+  absorbé et n'agit donc pas aussi dans le jeu.
+
+### Modifié
+
+- Le lancement au démarrage de Windows place désormais un raccourci dans le
+  dossier Démarrage (`shell:startup`) au lieu d'une valeur de registre :
+  visible, et supprimable à la main.
+
+### Corrigé
+
+- La désinstallation ne supprime plus les réglages et la liste de craft sans
+  demander confirmation.
+
 ## [1.0.0] — 2026-08-20
 
 Première version publiée. Pofus est un assistant multi-comptes pour Dofus :

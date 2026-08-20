@@ -72,4 +72,25 @@ public static class Win32Native
 
     [DllImport("user32.dll", EntryPoint = "GetClassLongPtrW", SetLastError = true)]
     public static extern nint GetClassLongPtr(nint hWnd, int nIndex);
+
+    public delegate nint LowLevelMouseProc(int nCode, nint wParam, nint lParam);
+
+    /// <summary>
+    /// Byte offset of <c>mouseData</c> inside MSLLHOOKSTRUCT: POINT pt (two
+    /// 32-bit ints) comes first. Read directly rather than marshalling the
+    /// whole struct — this runs on every mouse move.
+    /// </summary>
+    public const int MouseHookStructMouseDataOffset = 8;
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern nint SetWindowsHookEx(int idHook, LowLevelMouseProc lpfn, nint hMod, uint dwThreadId);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool UnhookWindowsHookEx(nint hhk);
+
+    [DllImport("user32.dll")]
+    public static extern nint CallNextHookEx(nint hhk, int nCode, nint wParam, nint lParam);
+
+    [DllImport("user32.dll")]
+    public static extern short GetAsyncKeyState(int vKey);
 }

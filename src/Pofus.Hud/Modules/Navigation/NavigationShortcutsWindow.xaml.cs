@@ -34,6 +34,10 @@ public partial class NavigationShortcutsWindow : Window
         _panels = panels;
 
         PreviewKeyDown += OnPreviewKeyDown;
+        // The extra mouse buttons are valid shortcuts too, so capture accepts
+        // them alongside keys. Left and right are excluded: binding them would
+        // make this very window unusable.
+        PreviewMouseDown += OnPreviewMouseDown;
         Loaded += async (_, _) => await LoadAsync();
         // Never leave the hotkeys released if the window is closed mid-capture.
         Closed += (_, _) => _hotkeyListener.ResumeAll();
@@ -155,6 +159,30 @@ public partial class NavigationShortcutsWindow : Window
         BeginCaptureMode($"Appuyez sur la nouvelle combinaison pour « {DescribeAction(action)} »...");
     }
 
+    private async void OnPreviewMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (_capturingAction is null && _capturingPanelId is null)
+        {
+            return;
+        }
+
+        var virtualKey = e.ChangedButton switch
+        {
+            System.Windows.Input.MouseButton.XButton1 => KeyCombo.VkExtraButton1,
+            System.Windows.Input.MouseButton.XButton2 => KeyCombo.VkExtraButton2,
+            System.Windows.Input.MouseButton.Middle => KeyCombo.VkMiddleButton,
+            _ => 0u,
+        };
+
+        if (virtualKey == 0)
+        {
+            return; // left/right: let the click do its normal job
+        }
+
+        e.Handled = true;
+        await ApplyCapturedComboAsync(KeyCombo.ForMouseButton(ToKeyModifiers(Keyboard.Modifiers), virtualKey));
+    }
+
     private async void OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (_capturingAction is null && _capturingPanelId is null)
@@ -170,6 +198,12 @@ public partial class NavigationShortcutsWindow : Window
 
         e.Handled = true;
         var combo = new KeyCombo(ToKeyModifiers(Keyboard.Modifiers), key.ToString(), (uint)KeyInterop.VirtualKeyFromKey(key));
+        await ApplyCapturedComboAsync(combo);
+    }
+
+    /// <summary>Routes a captured combination to whichever binding is being edited.</summary>
+    private async Task ApplyCapturedComboAsync(KeyCombo combo)
+    {
         EndCaptureMode();
 
         if (_capturingAction is { } action)
