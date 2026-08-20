@@ -5,7 +5,7 @@ Toutes les évolutions notables de Pofus sont consignées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/),
 et le versionnage suit [SemVer](https://semver.org/lang/fr/).
 
-## [Non publié]
+## [1.1.0] — 2026-08-20
 
 ### Ajouté
 
@@ -103,4 +103,5 @@ navigation au clavier entre fenêtres, et une liste de courses de craft.
 - L'import passe par le composant WebView2 de Windows, présent par défaut sur
   Windows 11
 
+[1.1.0]: https://github.com/Ver-Solitaire/Pofus/releases/tag/v1.1.0
 [1.0.0]: https://github.com/Ver-Solitaire/Pofus/releases/tag/v1.0.0

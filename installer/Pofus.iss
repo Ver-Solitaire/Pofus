@@ -2,7 +2,7 @@
 ; La sortie de `dotnet publish` doit exister dans ..\publish avant de compiler.
 
 #define AppName "Pofus"
-#define AppVersion "1.0.0"
+#define AppVersion "1.1.0"
 #define AppPublisher "Ver-Solitaire"
 #define AppExeName "Pofus.App.exe"
 #define AppUrl "https://github.com/Ver-Solitaire/Pofus"
