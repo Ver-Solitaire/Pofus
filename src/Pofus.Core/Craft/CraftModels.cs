@@ -4,7 +4,7 @@ namespace Pofus.Core.Craft;
 /// <param name="ItemId">DofusBook/Dofus item id — the identity used for
 /// de-duplication, never the display name.</param>
 /// <param name="Quantity">How many copies of this equipment the user wants.</param>
-public sealed record CraftItem(int ItemId, string Name, int Quantity);
+public sealed record CraftItem(int ItemId, string Name, int Quantity, int Picture = 0);
 
 /// <summary>A crafting recipe: which ingredients, and how many of each, for ONE unit.</summary>
 public sealed record CraftRecipe(int ResultItemId, IReadOnlyList<RecipeIngredient> Ingredients);

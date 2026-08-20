@@ -9,6 +9,9 @@ et le versionnage suit [SemVer](https://semver.org/lang/fr/).
 
 ### Ajouté
 
+- Atelier : bouton « Actualiser » pour relire l'atelier sans recoller le lien,
+  et bouton « Voir les équipements » qui déplie un panneau latéral montrant
+  les équipements à fabriquer en grandes vignettes.
 - Les boutons supplémentaires de la souris (molette, Souris 4, Souris 5)
   peuvent servir de raccourci, avec modificateurs. Un bouton lié à Pofus est
   absorbé et n'agit donc pas aussi dans le jeu.

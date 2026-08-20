@@ -11,6 +11,12 @@ namespace Pofus.Core.Craft;
 /// </summary>
 public sealed class CraftState
 {
+    /// <summary>
+    /// The workshop this list came from, so it can be re-read later without
+    /// asking the user to paste the link again.
+    /// </summary>
+    public string? WorkshopUrl { get; set; }
+
     public List<CraftItem> Equipment { get; set; } = [];
 
     public List<RequiredResource> Resources { get; set; } = [];

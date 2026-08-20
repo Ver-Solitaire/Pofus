@@ -15,10 +15,13 @@ namespace Pofus.Hud.Modules.Craft;
 /// </summary>
 public sealed class ItemImageLoader
 {
-    private const string IconUrlFormat = "https://www.dofusbook.net/static/dist/items/{0}-50.webp";
+    // DofusBook publishes two sizes; the larger one is what the tile view needs
+    // if it is not to look upscaled.
+    private const string SmallUrlFormat = "https://www.dofusbook.net/static/dist/items/{0}-50.webp";
+    private const string LargeUrlFormat = "https://www.dofusbook.net/static/dist/items/{0}-70.webp";
 
     private readonly IAppLogger _logger;
-    private readonly Dictionary<int, BitmapImage?> _cacheByPicture = [];
+    private readonly Dictionary<(int Picture, bool Large), BitmapImage?> _cache = [];
     private bool _decodeFailureReported;
 
     public ItemImageLoader(IAppLogger logger)
@@ -26,15 +29,19 @@ public sealed class ItemImageLoader
         _logger = logger;
     }
 
-    /// <summary>The icon for a picture id, or null if there is none to show.</summary>
-    public BitmapImage? TryGet(int pictureId)
+    /// <summary>
+    /// The icon for a picture id, or null if there is none to show.
+    /// <paramref name="large"/> selects the tile-sized artwork.
+    /// </summary>
+    public BitmapImage? TryGet(int pictureId, bool large = false)
     {
         if (pictureId <= 0)
         {
             return null;
         }
 
-        if (_cacheByPicture.TryGetValue(pictureId, out var cached))
+        var key = (pictureId, large);
+        if (_cache.TryGetValue(key, out var cached))
         {
             return cached;
         }
@@ -44,9 +51,11 @@ public sealed class ItemImageLoader
         {
             image = new BitmapImage();
             image.BeginInit();
-            image.UriSource = new Uri(string.Format(IconUrlFormat, pictureId), UriKind.Absolute);
+            image.UriSource = new Uri(
+                string.Format(large ? LargeUrlFormat : SmallUrlFormat, pictureId), UriKind.Absolute);
             image.CacheOption = BitmapCacheOption.OnLoad;
-            image.DecodePixelWidth = 24; // rendered small; decode small
+            // Decode at the size actually rendered rather than full size.
+            image.DecodePixelWidth = large ? 70 : 24;
             image.EndInit();
 
             // Loading is asynchronous, so failures arrive as events rather than
@@ -60,7 +69,7 @@ public sealed class ItemImageLoader
             image = null;
         }
 
-        _cacheByPicture[pictureId] = image;
+        _cache[key] = image;
         return image;
     }
 

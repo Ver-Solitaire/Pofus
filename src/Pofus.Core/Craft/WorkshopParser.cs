@@ -3,7 +3,8 @@ using System.Text.Json;
 namespace Pofus.Core.Craft;
 
 /// <summary>One equipment entry of a workshop, with the recipe DofusBook already supplies.</summary>
-public sealed record WorkshopCraft(int ItemId, string Name, int Quantity, IReadOnlyList<WorkshopIngredient> Ingredients);
+public sealed record WorkshopCraft(
+    int ItemId, string Name, int Quantity, IReadOnlyList<WorkshopIngredient> Ingredients, int Picture = 0);
 
 /// <param name="Count">Needed for ONE unit of the equipment.</param>
 public sealed record WorkshopIngredient(int ItemId, string Name, int Count, int Picture = 0);
@@ -156,7 +157,11 @@ public static class WorkshopParser
         var quantity = element.TryGetProperty("quantity", out var qtyElement) && qtyElement.TryGetInt32(out var parsedQty) && parsedQty > 0
             ? parsedQty
             : 1;
+        var craftPicture = element.TryGetProperty("picture", out var craftPictureElement)
+            && craftPictureElement.TryGetInt32(out var parsedCraftPicture)
+                ? parsedCraftPicture
+                : 0;
 
-        return new WorkshopCraft(itemId, craftName, quantity, ingredients);
+        return new WorkshopCraft(itemId, craftName, quantity, ingredients, craftPicture);
     }
 }

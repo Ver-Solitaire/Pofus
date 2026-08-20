@@ -10,7 +10,13 @@
         MinWidth="380" MinHeight="320"
         Topmost="True"
         WindowStartupLocation="CenterScreen">
-    <Border Style="{StaticResource Pofus.PanelBorder}" Margin="14">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Style="{StaticResource Pofus.PanelBorder}" Margin="14">
         <Grid Margin="18">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -45,6 +51,15 @@
                 <Button x:Name="ImportButton" Grid.Column="1" Content="Importer" Click="OnImportClick" />
             </Grid>
 
+            <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,0,0,6">
+                <Button x:Name="RefreshButton" Content="Actualiser" Click="OnRefreshClick"
+                        Margin="0,0,6,0" IsEnabled="False"
+                        ToolTip="Relire l'atelier depuis DofusBook, en conservant vos cases cochées" />
+                <ToggleButton x:Name="ShowEquipmentToggle" Content="Voir les équipements"
+                              Checked="OnToggleEquipmentChanged" Unchecked="OnToggleEquipmentChanged"
+                              ToolTip="Afficher la liste des équipements à fabriquer" />
+            </StackPanel>
+
             <TextBlock x:Name="StatusText" Grid.Row="4" TextWrapping="Wrap" Margin="0,0,0,8"
                        Foreground="{StaticResource Pofus.Accent}" />
 
@@ -56,6 +71,7 @@
                     <TextBlock x:Name="EmptyStateText"
                                Text="Collez le lien de votre atelier ci-dessus, puis Importer."
                                Foreground="{DynamicResource Pofus.TextMuted}" />
+
                     <StackPanel x:Name="ResourceRowsPanel" />
                 </StackPanel>
             </ScrollViewer>
@@ -63,5 +79,31 @@
             <TextBlock x:Name="ProgressText" Grid.Row="7" Margin="0,10,0,0"
                        Foreground="{DynamicResource Pofus.TextMuted}" />
         </Grid>
-    </Border>
+        </Border>
+
+        <!--
+            The "big picture" extension. It is a panel of the same window rather
+            than a second window, so it moves, resizes and stays on top with the
+            list instead of having to be kept in sync with it.
+        -->
+        <Border x:Name="BigPicturePanel" Grid.Column="1" Visibility="Collapsed"
+                Style="{StaticResource Pofus.PanelBorder}" Margin="0,14,14,14" Width="452">
+            <Grid Margin="18">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Équipements à fabriquer"
+                           Style="{StaticResource Pofus.WindowTitle}" />
+                <Border Grid.Row="1" Height="1" Margin="0,12"
+                        Background="{DynamicResource Pofus.BorderSubtle}" />
+
+                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                    <WrapPanel x:Name="EquipmentTilesPanel" Orientation="Horizontal" />
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
 </Window>

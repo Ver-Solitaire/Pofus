@@ -50,10 +50,14 @@ internal static class WorkshopExtractionScript
         }
       }
       if (!ingredients.length) continue;
+      const picture = Number(item.picture);
       crafts.push({
         itemId: Number(craft.item_id ?? item.id) || 0,
-        name: String(label(item.cloth_name) || label(item.name) || label(craft.folder_name) || 'Équipement'),
+        // item.name is the equipment itself; cloth_name is its panoply, which
+        // would label several different pieces identically.
+        name: String(label(item.name) || label(item.cloth_name) || label(craft.folder_name) || 'Équipement'),
         quantity: Number(craft.quantity) > 0 ? Number(craft.quantity) : 1,
+        picture: Number.isInteger(picture) && picture > 0 ? picture : 0,
         ingredients: ingredients
       });
     }
