@@ -11,6 +11,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationIcon>..\..\assets\pofus.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Copied out so the tray icon and the windows can load it at runtime;
+         ApplicationIcon alone only stamps the executable. -->
+    <Content Include="..\..\assets\pofus.ico" Link="pofus.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
 </Project>

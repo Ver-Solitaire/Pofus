@@ -30,6 +30,7 @@ WizardStyle=modern
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayIcon={app}\{#AppExeName}
+SetupIconFile=..\assets\pofus.ico
 
 [Languages]
 Name: "french"; MessagesFile: "compiler:Languages\French.isl"

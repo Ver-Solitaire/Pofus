@@ -18,6 +18,13 @@ et le versionnage suit [SemVer](https://semver.org/lang/fr/).
 
 ### Modifié
 
+- Icône propre à l'application, dans l'exécutable, l'installeur et la zone de
+  notification.
+- Typographie passée à Segoe UI Variable, la police du langage visuel de
+  Windows 11, et ombres portées adoucies.
+- Poignée de déplacement sur le HUD et le widget des personnages : ils se
+  saisissaient jusqu'ici par les quelques pixels laissés libres entre les
+  boutons.
 - Le lancement au démarrage de Windows place désormais un raccourci dans le
   dossier Démarrage (`shell:startup`) au lieu d'une valeur de registre :
   visible, et supprimable à la main.

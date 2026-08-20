@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
 using Pofus.Hud.Panels;
 using Application = System.Windows.Application;
@@ -27,11 +28,34 @@ internal sealed class TrayIconController : IDisposable
 
         _notifyIcon = new NotifyIcon
         {
-            Icon = SystemIcons.Application,
+            Icon = LoadAppIcon(),
             Visible = true,
             Text = "Pofus",
             ContextMenuStrip = contextMenu,
         };
+    }
+
+    /// <summary>
+    /// The application icon, falling back to the generic Windows one rather
+    /// than leaving the tray empty — an invisible tray icon would strand the
+    /// user with no way to bring hidden windows back.
+    /// </summary>
+    private static Icon LoadAppIcon()
+    {
+        try
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, "pofus.ico");
+            if (File.Exists(path))
+            {
+                return new Icon(path);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or ArgumentException)
+        {
+            // Falls through to the system icon below.
+        }
+
+        return SystemIcons.Application;
     }
 
     private void RebuildMenu(ContextMenuStrip menu)

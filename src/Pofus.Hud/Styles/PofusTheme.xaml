@@ -32,16 +32,26 @@
     <SolidColorBrush x:Key="Pofus.TextDisabled" Color="{StaticResource Pofus.TextDisabled.Color}" />
     <SolidColorBrush x:Key="Pofus.Danger" Color="{StaticResource Pofus.Danger.Color}" />
 
+    <!-- ===== Tokens: typography =====
+         Segoe UI Variable is the Windows 11 UI face: better spacing and a
+         cleaner skeleton than plain Segoe UI, and it ships with the system, so
+         nothing has to be embedded. Display is optically sized for headings,
+         Text for body copy; both fall back to Segoe UI on Windows 10. -->
+    <FontFamily x:Key="Pofus.Font.Text">Segoe UI Variable Text, Segoe UI</FontFamily>
+    <FontFamily x:Key="Pofus.Font.Display">Segoe UI Variable Display, Segoe UI</FontFamily>
+
     <!-- ===== Tokens: shape/depth ===== -->
-    <CornerRadius x:Key="Pofus.Radius.Panel">16</CornerRadius>
-    <CornerRadius x:Key="Pofus.Radius.Control">8</CornerRadius>
-    <CornerRadius x:Key="Pofus.Radius.Small">6</CornerRadius>
+    <CornerRadius x:Key="Pofus.Radius.Panel">14</CornerRadius>
+    <CornerRadius x:Key="Pofus.Radius.Control">7</CornerRadius>
+    <CornerRadius x:Key="Pofus.Radius.Small">5</CornerRadius>
     <CornerRadius x:Key="Pofus.Radius.Slot">20</CornerRadius>
-    <DropShadowEffect x:Key="Pofus.Shadow.Panel" Color="Black" Opacity="0.45" BlurRadius="20" ShadowDepth="4" Direction="270" />
+    <!-- Wider, softer and further from the surface than a default shadow:
+         these windows float over a busy game, and need to read as separate. -->
+    <DropShadowEffect x:Key="Pofus.Shadow.Panel" Color="Black" Opacity="0.55" BlurRadius="28" ShadowDepth="6" Direction="270" />
 
     <!-- ===== Baseline text ===== -->
     <Style TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontFamily" Value="{StaticResource Pofus.Font.Text}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="Foreground" Value="{DynamicResource Pofus.TextPrimary}" />
     </Style>
@@ -59,7 +69,7 @@
          back to stock Windows chrome, consistent with every other control here ===== -->
     <Style TargetType="MenuItem">
         <Setter Property="Foreground" Value="{DynamicResource Pofus.TextPrimary}" />
-        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontFamily" Value="{StaticResource Pofus.Font.Text}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="Padding" Value="10,6" />
         <Setter Property="Template">
@@ -112,8 +122,12 @@
 
     <!-- ===== Window header (custom chrome — see AccountManagerWindow / NavigationShortcutsWindow) ===== -->
     <Style x:Key="Pofus.WindowTitle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource Pofus.Font.Display}" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontSize" Value="14" />
+        <!-- Slight negative tracking: at heading sizes Segoe UI Variable reads
+             tighter and more deliberate. -->
+        <Setter Property="TextOptions.TextFormattingMode" Value="Ideal" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
 
@@ -143,7 +157,7 @@
     <!-- ===== Buttons — flat, rounded, smooth hover fade ===== -->
     <Style TargetType="Button">
         <Setter Property="Foreground" Value="{DynamicResource Pofus.TextPrimary}" />
-        <Setter Property="FontFamily" Value="Segoe UI" />
+        <Setter Property="FontFamily" Value="{StaticResource Pofus.Font.Text}" />
         <Setter Property="FontSize" Value="11" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Padding" Value="10,5" />

@@ -11,8 +11,32 @@
         SizeToContent="WidthAndHeight">
     <Border x:Name="RootPanel"
             Style="{StaticResource Pofus.PanelBorder}"
-            Padding="14,9"
+            Padding="8,9,14,9"
             MouseLeftButtonDown="OnRootPanelMouseLeftButtonDown">
-        <StackPanel x:Name="ModuleSlotsPanel" Orientation="Horizontal" />
+        <StackPanel Orientation="Horizontal">
+            <!--
+                Explicit drag handle. The modules fill nearly the whole bar, so
+                dragging used to mean hitting the few pixels between buttons;
+                this gives a target that is always there and reads as grabbable.
+            -->
+            <Border x:Name="DragHandle"
+                    Width="18" Margin="0,0,6,0"
+                    Background="Transparent"
+                    Cursor="SizeAll"
+                    ToolTip="Glisser pour déplacer le HUD"
+                    MouseLeftButtonDown="OnRootPanelMouseLeftButtonDown">
+                <UniformGrid Columns="2" Rows="3" Width="10" Height="16"
+                             VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Ellipse Width="3" Height="3" Margin="1" Fill="{DynamicResource Pofus.TextMuted}" />
+                    <Ellipse Width="3" Height="3" Margin="1" Fill="{DynamicResource Pofus.TextMuted}" />
+                    <Ellipse Width="3" Height="3" Margin="1" Fill="{DynamicResource Pofus.TextMuted}" />
+                    <Ellipse Width="3" Height="3" Margin="1" Fill="{DynamicResource Pofus.TextMuted}" />
+                    <Ellipse Width="3" Height="3" Margin="1" Fill="{DynamicResource Pofus.TextMuted}" />
+                    <Ellipse Width="3" Height="3" Margin="1" Fill="{DynamicResource Pofus.TextMuted}" />
+                </UniformGrid>
+            </Border>
+
+            <StackPanel x:Name="ModuleSlotsPanel" Orientation="Horizontal" />
+        </StackPanel>
     </Border>
 </Window>

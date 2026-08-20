@@ -14,6 +14,24 @@
             Padding="8"
             MouseLeftButtonDown="OnRootPanelMouseLeftButtonDown">
         <StackPanel Orientation="Horizontal">
+            <!-- Same grip as the HUD: the chips fill the bar and each one
+                 activates a window, leaving almost nothing to grab. -->
+            <Border x:Name="DragHandle"
+                    Width="18" Background="Transparent"
+                    Cursor="SizeAll"
+                    ToolTip="Glisser pour déplacer le widget"
+                    MouseLeftButtonDown="OnRootPanelMouseLeftButtonDown">
+                <UniformGrid Columns="2" Rows="3" Width="10" Height="16"
+                             VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Ellipse Width="3" Height="3" Margin="1" Fill="{DynamicResource Pofus.TextMuted}" />
+                    <Ellipse Width="3" Height="3" Margin="1" Fill="{DynamicResource Pofus.TextMuted}" />
+                    <Ellipse Width="3" Height="3" Margin="1" Fill="{DynamicResource Pofus.TextMuted}" />
+                    <Ellipse Width="3" Height="3" Margin="1" Fill="{DynamicResource Pofus.TextMuted}" />
+                    <Ellipse Width="3" Height="3" Margin="1" Fill="{DynamicResource Pofus.TextMuted}" />
+                    <Ellipse Width="3" Height="3" Margin="1" Fill="{DynamicResource Pofus.TextMuted}" />
+                </UniformGrid>
+            </Border>
+
             <TextBlock x:Name="EmptyStateText"
                        Text="Aucun compte Dofus détecté"
                        Foreground="{DynamicResource Pofus.TextMuted}"
