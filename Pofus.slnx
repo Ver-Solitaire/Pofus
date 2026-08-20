@@ -1,4 +1,12 @@
 <Solution>
-  <Folder Name="/src/" />
-  <Folder Name="/tests/" />
+  <Folder Name="/src/">
+    <Project Path="src/Pofus.App/Pofus.App.csproj" />
+    <Project Path="src/Pofus.Core/Pofus.Core.csproj" />
+    <Project Path="src/Pofus.Hud/Pofus.Hud.csproj" />
+    <Project Path="src/Pofus.Platform/Pofus.Platform.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Pofus.Core.Tests/Pofus.Core.Tests.csproj" />
+    <Project Path="tests/Pofus.Platform.Tests/Pofus.Platform.Tests.csproj" />
+  </Folder>
 </Solution>
